@@ -10,6 +10,20 @@ import (
 	"your-app/internal/ws"
 )
 
+// CORS middleware
+func withCORS(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	// Connect to DB
 	db.Init()
@@ -23,5 +37,5 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Starting server on :%s", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	log.Fatal(http.ListenAndServe(":"+port, withCORS(mux)))
 }

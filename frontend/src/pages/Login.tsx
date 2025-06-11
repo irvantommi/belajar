@@ -1,16 +1,17 @@
 import React from "react";
+import { LoginProps } from "../types";
 import AuthForm from "../components/AuthForm";
-import { login } from "../services/api";
+import { login } from "../services/auth";
 
-export default function Login({ setToken }: { setToken: (token: string) => void }) {
-  async function handleLogin(email: string, password: string) {
+export default function Login({ setToken }: LoginProps) {
+  const handleSubmit = async (email: string, password: string) => {
     try {
-      const res = await login(email, password);
-      setToken(res.token);
-      alert("Login successful");
-    } catch (err) {
-      alert("Login failed");
+      const response = await login(email, password);
+      setToken(response.token);
+    } catch (error) {
+      console.error("Login failed:", error);
     }
-  }
-  return <AuthForm onSubmit={handleLogin} buttonText="Login" />;
+  };
+
+  return <AuthForm onSubmit={handleSubmit} buttonText="Login" />;
 }

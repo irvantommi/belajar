@@ -1,10 +1,9 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"your-app/internal/db"
@@ -25,19 +24,29 @@ type Claims struct {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("RegisterHandler called")
+
 	var creds Credentials
-	json.NewDecoder(r.Body).Decode(&creds)
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		log.Println("Error decoding request body:", err)
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	log.Println("Attempting to register email:", creds.Email)
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(creds.Password), bcrypt.DefaultCost)
 	if err != nil {
+		log.Println("Error hashing password:", err)
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 	_, err = db.DB.Exec("INSERT INTO users (email, password) VALUES ($1, $2)", creds.Email, hash)
 	if err != nil {
+		log.Println("Error inserting user into DB:", err)
 		http.Error(w, "User already exists", http.StatusConflict)
 		return
 	}
+	log.Println("User registered successfully:", creds.Email)
 	w.WriteHeader(http.StatusCreated)
 }
 

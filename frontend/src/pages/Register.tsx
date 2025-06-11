@@ -1,15 +1,17 @@
 import React from "react";
 import AuthForm from "../components/AuthForm";
-import { register } from "../services/api";
+import { register } from "../services/auth";
 
 export default function Register() {
-  async function handleRegister(email: string, password: string) {
+  const handleSubmit = async (email: string, password: string) => {
     try {
       await register(email, password);
-      alert("Registration successful. Please login.");
-    } catch (err) {
-      alert("Registration failed");
+      alert("Registration successful! Please login.");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      alert("Registration failed. Please try again.");
     }
-  }
-  return <AuthForm onSubmit={handleRegister} buttonText="Register" />;
+  };
+
+  return <AuthForm onSubmit={handleSubmit} buttonText="Register" />;
 }
